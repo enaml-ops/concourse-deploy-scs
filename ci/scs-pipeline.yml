@@ -1,0 +1,243 @@
+groups:
+- name: all
+  jobs:
+  - get-product-version
+  - deploy
+  - deploy-service-broker
+  - register-service-broker
+- name: deploy
+  jobs:
+  - get-product-version
+  - deploy
+- name: errands
+  jobs:
+  - deploy-service-broker
+  - register-service-broker
+
+resources:
+- name: p-spring-cloud-services
+  type: pivnet
+  check_every: 4h
+  source:
+    api_token: {{pivnet_api_token}}
+    product_slug: p-spring-cloud-services
+    product_version: {{p-spring-cloud-services-version}}
+    sort_by: semver
+- name: concourse-deploy-scs
+  type: git
+  check_every: 4h
+  source:
+    uri: https://github.com/enaml-ops/concourse-deploy-scs
+    branch: master
+- name: omg-cli
+  type: github-release
+  check_every: 4h
+  source:
+    user: enaml-ops
+    repository: omg-cli
+- name: omg-product-bundle
+  type: github-release
+  check_every: 4h
+  source:
+    user: enaml-ops
+    repository: omg-product-bundle
+- name: {{deployment-name}}
+  type: bosh-deployment
+  source:
+    ca_cert: {{bosh-cacert}}
+    client_id: {{bosh-client-id}}
+    client_secret: {{bosh-client-secret}}
+    deployment: p-scs
+    target: {{bosh-target}}
+- name: stemcells
+  type: pivnet
+  source:
+    api_token: {{pivnet_api_token}}
+    product_slug: stemcells
+    product_version: {{stemcell-version}}
+
+resource_types:
+- name: pivnet
+  type: docker-image
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final
+
+jobs:
+- name: get-product-version
+  plan:
+    - get: concourse-deploy-scs
+    - get: omg-cli
+      params:
+        globs:
+        - omg-linux
+    - get: omg-product-bundle
+      trigger: true
+      params:
+        globs:
+        - p-scs-plugin-linux
+    - task: get-product-version
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: virtmerlin/deploy-worker
+        run:
+          path: concourse-deploy-scs/ci/tasks/get-version-from-plugin.sh
+        params:
+          PRODUCT_PLUGIN: {{product_plugin}}
+          OUTPUT_DIR: versions
+        inputs:
+        - name: concourse-deploy-scs
+        - name: omg-cli
+        - name: omg-product-bundle
+        outputs:
+        - name: versions
+          path: ""
+    - task: update-pipeline
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: virtmerlin/deploy-worker
+        run:
+          path: concourse-deploy-scs/ci/tasks/update-pipeline.sh
+        params:
+          PIPELINE_NAME: deploy-scs
+          CONCOURSE_URL: {{concourse-url}}
+          CONCOURSE_USER: {{concourse-user}}
+          CONCOURSE_PASS: {{concourse-pass}}
+        inputs:
+        - name: concourse-deploy-scs
+        - name: versions
+        outputs:
+- name: deploy
+  plan:
+    - get: concourse-deploy-scs
+    - get: omg-cli
+      passed: [get-product-version]
+      params:
+        globs:
+        - omg-linux
+    - get: omg-product-bundle
+      passed: [get-product-version]
+      trigger: true
+      params:
+        globs:
+        - p-scs-plugin-linux
+    - get: p-spring-cloud-services
+      params:
+        globs:
+        - p-spring-cloud-services-*
+    - get: stemcells
+      trigger: true
+      params:
+        globs:
+        - {{stemcell-cpi-glob}}
+    - task: generate-manifest
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: virtmerlin/deploy-worker
+        run:
+          path: concourse-deploy-scs/ci/tasks/generate-scs-manifest.sh
+        params:
+          BOSH_CLIENT: {{bosh-user}}
+          BOSH_CLIENT_SECRET: {{bosh-pass}}
+          BOSH_CACERT: {{bosh-cacert}}
+          PRODUCT_PLUGIN: {{product_plugin}}
+          STEMCELL_VERSION: {{stemcell-version}}
+          VAULT_ADDR: {{vault_addr}}
+          VAULT_HASH_IP: {{vault_hash_ip}}
+          VAULT_HASH_HOSTVARS: {{vault_hash_hostvars}}
+          VAULT_HASH_KEYCERT: {{vault_hash_keycert}}
+          VAULT_HASH_MISC: {{vault_hash_misc}}
+          VAULT_HASH_PASSWORD: {{vault_hash_password}}
+          VAULT_TOKEN: {{vault_token}}
+          OUTPUT_DIR: manifest
+        inputs:
+        - name: concourse-deploy-scs
+        - name: omg-cli
+        - name: omg-product-bundle
+        outputs:
+        - name: manifest
+          path: ""
+    - task: extract-tile
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: virtmerlin/deploy-worker
+        run:
+          path: concourse-deploy-scs/ci/tasks/extract-tile.sh
+        params:
+          PRODUCT_DIR: p-spring-cloud-services
+          OUTPUT_DIR: p-spring-cloud-services-extracted
+        inputs:
+        - name: concourse-deploy-scs
+        - name: p-spring-cloud-services
+        outputs:
+        - name: p-spring-cloud-services-extracted
+          path: ""
+    - put: {{deployment-name}}
+      params:
+        manifest: manifest/deployment.yml
+        stemcells:
+        - stemcells/bosh-stemcell*.tgz
+        releases:
+        - p-spring-cloud-services-extracted/releases/*.tgz
+- name: deploy-service-broker
+  plan:
+    - get: concourse-deploy-scs
+    - get: {{deployment-name}}
+      passed: [deploy]
+      trigger: true
+    - task: deploy-service-broker
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: virtmerlin/deploy-worker
+        run:
+          path: concourse-deploy-scs/ci/tasks/run-errand.sh
+        params:
+          BOSH_CACERT: {{bosh-cacert}}
+          BOSH_CLIENT: {{bosh-client-id}}
+          BOSH_CLIENT_SECRET: {{bosh-client-secret}}
+          BOSH_DEPLOYMENT_NAME: p-scs
+          BOSH_ERRAND: deploy-service-broker
+          BOSH_TARGET: {{bosh-target}}
+        inputs:
+        - name: concourse-deploy-scs
+        outputs:
+- name: register-service-broker
+  plan:
+    - get: concourse-deploy-scs
+    - get: {{deployment-name}}
+      passed: [deploy-service-broker]
+      trigger: true
+    - task: register-service-broker
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: virtmerlin/deploy-worker
+        run:
+          path: concourse-deploy-scs/ci/tasks/run-errand.sh
+        params:
+          BOSH_CACERT: {{bosh-cacert}}
+          BOSH_CLIENT: {{bosh-client-id}}
+          BOSH_CLIENT_SECRET: {{bosh-client-secret}}
+          BOSH_DEPLOYMENT_NAME: p-scs
+          BOSH_ERRAND: register-service-broker
+          BOSH_TARGET: {{bosh-target}}
+        inputs:
+        - name: concourse-deploy-scs
+        outputs:
