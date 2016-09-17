@@ -48,7 +48,7 @@ resources:
     client_id: {{bosh-client-id}}
     client_secret: {{bosh-client-secret}}
     deployment: p-scs
-    target: {{bosh-target}}
+    target: {{bosh-url}}
 - name: stemcells
   type: pivnet
   source:
@@ -212,7 +212,7 @@ jobs:
           BOSH_CLIENT_SECRET: {{bosh-client-secret}}
           BOSH_DEPLOYMENT_NAME: p-scs
           BOSH_ERRAND: deploy-service-broker
-          BOSH_TARGET: {{bosh-target}}
+          BOSH_TARGET: {{bosh-url}}
         inputs:
         - name: concourse-deploy-scs
         outputs:
@@ -237,7 +237,7 @@ jobs:
           BOSH_CLIENT_SECRET: {{bosh-client-secret}}
           BOSH_DEPLOYMENT_NAME: p-scs
           BOSH_ERRAND: register-service-broker
-          BOSH_TARGET: {{bosh-target}}
+          BOSH_TARGET: {{bosh-url}}
         inputs:
         - name: concourse-deploy-scs
         outputs:

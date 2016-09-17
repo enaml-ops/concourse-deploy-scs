@@ -3,6 +3,6 @@
   "bosh-client-secret": "SHARED_SECRET",
   "bosh-cacert": "-----BEGIN CERTIFICATE-----\n...\n...\n....----END CERTIFICATE-----\n",
   "bosh-pass": "PASSWORD",
-  "bosh-target": "https://10.0.0.10",
+  "bosh-url": "https://10.0.0.10",
   "bosh-user": "admin",
 }
