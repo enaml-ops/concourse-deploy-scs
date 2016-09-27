@@ -53,15 +53,15 @@ p-spring-cloud-services-version: 1.1.3
 stemcell-version: 3232.17
 
 # Vault hash containing app-domain and system-domain
-vault_hash_hostvars: secret/cloudfoundry-nonprod-hostvars
+vault_hash_hostvars: secret/nonprod-pcf-hostvars
 
 # Vault hash containing bosh-url, bosh-port, bosh-user, and bosh-pass
-vault_hash_misc: secret/common-nonprod-props
+vault_hash_misc: secret/nonprod-common-props
 
 # Vault hash containing the PCF admin-password
-vault_hash_password: secret/cloudfoundry-nonprod-password
+vault_hash_password: secret/nonprod-pcf-password
 
 # Vault hash where the SCS plugin stores its credentials
-vault_hash_secret: secret/pscs-nonprod-password
+vault_hash_secret: secret/nonprod-scs-password
 
 #eof

@@ -39,8 +39,8 @@ Deploy Pivotal Spring Cloud Services with [omg](https://github.com/enaml-ops) in
 
     ```
     export VAULT_ADDR=http://YOUR_VAULT_ADDR:8200
-    export VAULT_HASH=secret/cf-staging-props
-    vault write $VAULT_HASH @deployment-props.json
+    export VAULT_HASH_MISC=secret/nonprod-common-props
+    vault write $VAULT_HASH_MISC @deployment-props.json
     ```
 
 1. Delete or move `deployment-props.json` to a secure location.
