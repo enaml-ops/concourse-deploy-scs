@@ -75,7 +75,7 @@ jobs:
       trigger: true
       params:
         globs:
-        - p-scs-plugin-linux
+        - {{product_plugin}}
     - task: get-product-version
       config:
         platform: linux
@@ -126,7 +126,7 @@ jobs:
       trigger: true
       params:
         globs:
-        - p-scs-plugin-linux
+        - {{product_plugin}}
     - get: p-spring-cloud-services
       params:
         globs:
@@ -158,6 +158,7 @@ jobs:
           VAULT_HASH_IP: {{vault_hash_ip}}
           VAULT_HASH_MISC: {{vault_hash_misc}}
           VAULT_HASH_PASSWORD: {{vault_hash_password}}
+          VAULT_HASH_SECRET: {{vault_hash_secret}}
           VAULT_TOKEN: {{vault_token}}
           OUTPUT_DIR: manifest
         inputs:

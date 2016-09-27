@@ -32,7 +32,7 @@ p-spring-cloud-services-version: 1.1.3
 stemcell: bosh-vsphere-esxi-ubuntu-trusty-go_agent
 stemcell-cpi-glob: '*vsphere*'
 stemcell-version: 3232.17
-product_plugin: p-scs-plugin-linux
+product_plugin: p-spring-cloud-services-plugin-linux
 pivnet_api_token: API_TOKEN
 vault_addr: http://10.0.0.8:8200
 vault_hash_hostvars: secret/cf-nonprod-hostvars
@@ -40,4 +40,5 @@ vault_hash_ip: secret/cf-nonprod-ip
 vault_hash_keycert: secret/cf-nonprod-keycert
 vault_hash_misc: secret/cf-staging-props
 vault_hash_password: secret/cf-nonprod-password
+vault_hash_secret: secret/pscs-nonprod-password
 vault_token: VAULT_TOKEN
