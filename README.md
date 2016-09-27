@@ -32,7 +32,7 @@ Deploy Pivotal Spring Cloud Services with [omg](https://github.com/enaml-ops) in
     All available parameters/keys can be listed by querying the plugin.  If not specified in `deployment-props.json`, default values will be used where possible.
 
     ```
-    omg-linux deploy-product p-scs-plugin-linux --help
+    omg-linux deploy-product p-spring-cloud-services-plugin-linux --help
     ```
 
 1. Load your deployment properties into `vault`.  `VAULT_HASH` you define here and `vault_hash_misc` in `pipeline-vars.yml` below must match.  You may consider using the `vault` hash here to hold common settings, referenced by multiple `omg`-based deployments.  In such a case, you might name the hash something like `secret/nonprod-common-props`.
