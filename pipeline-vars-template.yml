@@ -42,14 +42,8 @@ pivnet_api_token: API_TOKEN
 vault_addr: http://10.0.0.8:8200
 vault_token: VAULT_TOKEN
 
-# Vault hash containing Elastic Runtime (ERT) for PCF IP addresses
-vault_hash_ert_ip: secret/cloudfoundry-nonprod-ip
-
 # Vault hash containing app-domain and system-domain
 vault_hash_hostvars: secret/cloudfoundry-nonprod-hostvars
-
-# Vault hash containing RabbitMQ IP addresses
-vault_hash_ip: secret/rabbitmq-nonprod-ip
 
 # Vault hash containing bosh-url, bosh-port, bosh-user, and bosh-pass
 vault_hash_misc: secret/common-nonprod-props
