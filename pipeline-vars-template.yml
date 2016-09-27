@@ -5,7 +5,7 @@
 # For example:
 #
 #   fly -t TARGET set-pipeline \
-#     -p deploy-pcf \
+#     -p deploy-scs \
 #     -c ci/scs-pipeline.yml \
 #     -l pipeline-vars.yml
 #

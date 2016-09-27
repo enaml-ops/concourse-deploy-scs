@@ -56,9 +56,9 @@ Deploy Pivotal Spring Cloud Services with [omg](https://github.com/enaml-ops) in
     $EDITOR pipeline-vars.yml
     ```
 
-    Note: If you are deploying Pivotal CF (PCF), you must add your `API Token` found at the bottom of your [Pivotal Profile](https://network.pivotal.io/users/dashboard/edit-profile) page.
+    Note: If you are deploying Pivotal Spring Cloud Services (P-SCS), you must add your `API Token` found at the bottom of your [Pivotal Profile](https://network.pivotal.io/users/dashboard/edit-profile) page.
 
-1. Create or update the pipeline, either opensource or PCF.
+1. Create or update the pipeline, either opensource or P-SCS.
 
     ```
     fly -t TARGET set-pipeline -p deploy-scs -c ci/opensource-pipeline.yml -l pipeline-vars.yml
@@ -67,20 +67,20 @@ Deploy Pivotal Spring Cloud Services with [omg](https://github.com/enaml-ops) in
     _or_
 
     ```
-    fly -t TARGET set-pipeline -p deploy-pcf -c ci/pcf-pipeline.yml -l pipeline-vars.yml
+    fly -t TARGET set-pipeline -p deploy-scs -c ci/scs-pipeline.yml -l pipeline-vars.yml
     ```
 
 1. Delete or move `pipeline-vars.yml` to a secure location.
 1. Unpause the pipeline
 
     ```
-    fly -t TARGET unpause-pipeline -p deploy-pcf
+    fly -t TARGET unpause-pipeline -p deploy-scs
     ```
 
 1. Trigger the deployment job and observe the output.
 
     ```
-    fly -t TARGET trigger-job -j deploy-pcf/get-product-version -w
-    fly -t TARGET trigger-job -j deploy-pcf/deploy -w
+    fly -t TARGET trigger-job -j deploy-scs/get-product-version -w
+    fly -t TARGET trigger-job -j deploy-scs/deploy -w
     ```
 
